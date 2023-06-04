@@ -1,0 +1,24 @@
+/********************************************
+ * GENERAL
+ ********************************************/
+logging {
+	level = "warn"
+}
+
+/********************************************
+ * METRICS
+ ********************************************/
+module.file "metrics" {
+filename = ".\\modules\\metrics\\module.river"
+    arguments {
+        enabled_collectors = env("flow_collector")
+        enabled_service  = env("flow_service")
+    }
+}
+
+/********************************************
+ * LOGS
+ ********************************************/
+module.file "logs" {
+filename = ".\\modules\\logs\\module.river"
+}
