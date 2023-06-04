@@ -1,0 +1,52 @@
+/********************************************
+ * ARGUMENTS
+ ********************************************/
+
+argument "enabled_collectors" {
+	optional = true
+}
+
+argument "enabled_service" {
+	optional = true
+}
+
+/********************************************
+ * PROMETHEUS COLLECT
+ ********************************************/
+prometheus.exporter.windows "default" {
+  enabled_collectors = concat(["cpu", "cs", "logical_disk", "net", "os", "service", "system"], [argument.enabled_collectors.value])
+  service {
+    where_clause = "Name = 'service1' OR Name = 'service2' OR Name = 'service3' argument.enabled_service.value"
+  }
+}
+
+/********************************************
+ * PROMETHEUS SCRAPE
+ ********************************************/
+prometheus.scrape "default" {
+  targets    = prometheus.exporter.windows.default.targets
+  forward_to = [prometheus.relabel.instance.receiver]
+}
+
+/********************************************
+ * PROMETHEUS RELABEL
+ ********************************************/
+prometheus.relabel "instance" {
+  forward_to = [prometheus.remote_write.default.receiver]
+  rule {
+    action       = "replace"
+    replacement  = constants.hostname
+    target_label = "instance"
+  }
+}
+
+/********************************************
+ * PROMETHEUS WRITE
+ ********************************************/
+prometheus.remote_write "default" {
+  endpoint {
+
+	      url ="https://metrics.redacted/api/v1/push"
+          headers = { "X-Scope-OrgID" = "redacted" }
+    }
+}
