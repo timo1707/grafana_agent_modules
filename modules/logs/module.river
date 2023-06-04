@@ -1,0 +1,98 @@
+/********************************************
+ * LOKI WinEvent SCRAPE
+ ********************************************/
+loki.source.windowsevent "application"  {
+    eventlog_name = "Application"
+    forward_to = [loki.process.extract_labels.receiver]
+}
+loki.source.windowsevent "system"  {
+    eventlog_name = "System"
+    forward_to = [loki.process.extract_labels.receiver]
+}
+loki.source.windowsevent "security"  {
+    eventlog_name = "Security"
+    forward_to = [loki.process.extract_labels.receiver]
+}
+
+/********************************************
+ * LOKI REGEX LABELS
+ ********************************************/
+loki.process "extract_labels" {
+  forward_to = [loki.relabel.hostname.receiver]
+  stage.regex {
+    expression = "\"event_id\":(?P<event_id>\\d+),\"level\":(?P<severity>\\d+)"
+  }
+  stage.labels {
+    values = {
+      "level"  = "severity",
+      "event_id" = "event_id",
+    }
+  }
+}
+
+/********************************************
+ * application1 LOGS
+ ********************************************/
+ loki.source.file "application1" {
+  targets    = [{__path__ = "C:\\Install\\Logs\\application1.log", "app" = "application1"}] 
+  forward_to = [loki.write.default.receiver]
+}
+
+/********************************************
+ * application2 LOGS
+ ********************************************/
+discovery.file "application2" {
+    path_targets = [{"__path__" = "C:\\Program Files\\application2\\logs\\*.log"}]
+}
+
+discovery.relabel "application2" {
+  targets = discovery.file.application2.targets
+  rule {
+    target_label = "app"
+    replacement  = "application2"
+  }
+}
+
+ loki.source.file "application2" {
+  targets    = discovery.relabel.application2.output
+  forward_to = [loki.process.application2.receiver]
+}
+
+/********************************************
+ * LOKI REGEX
+ ********************************************/
+loki.process "application2" {
+  forward_to = [loki.relabel.hostname.receiver]
+  stage.regex {
+    expression = "^(?P<timestamp>[^,]*,[^ ]*)"
+  }
+  stage.labels {
+    values = {
+      "timestamp"  = "timestamp",
+    }
+  }
+  stage.timestamp {
+    source = "timestamp"
+    format = "YYYY.MM.DD HH:MM:SS,SSS"
+  }
+}
+
+loki.relabel "hostname" {
+  forward_to = [loki.write.default.receiver]
+
+  rule {
+    action       = "replace"
+    target_label = "computer"
+    replacement  = constants.hostname
+  }
+}
+
+/********************************************
+ * LOKI WRITE
+ ********************************************/
+loki.write "default" {
+    endpoint {
+        url ="https://logs.redacted/api/prom/push"
+        tenant_id = "redacted"
+    }
+}
