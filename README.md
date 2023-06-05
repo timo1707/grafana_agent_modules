@@ -1,4 +1,4 @@
-# grafana_agent_modules
+# Grafana Agent Flow Configuration for Windows
 
 a simple [Grafana Agent Flow](https://grafana.com/docs/agent/latest/) Configuration for windows clients with preconfigured metrics and logs modules.
 
