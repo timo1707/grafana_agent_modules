@@ -4,22 +4,33 @@
 argument "prometheus_endpoint" { }
 
 
-discovery.docker "containers" {
-  host = "unix:///var/run/docker.sock"
-}
-
 
 /********************************************
- * AGENT METRICS
+ * UNIX METRICS
  ********************************************/
-prometheus.remote_write "default" {
-	endpoint {
-		url = argument.prometheus_endpoint.value
-	}
+prometheus.exporter.unix {
 }
 
+/********************************************
+ * PROMETHEUS SCRAPE
+ ********************************************/
 prometheus.scrape "default" {
-	targets         = discovery.docker.default.output
-	forward_to      = [prometheus.remote_write.default.receiver]
-	scrape_interval = "10s"
+  targets    = prometheus.exporter.unix.targets
+  forward_to = [prometheus.remote_write.default.receiver ]
+}
+prometheus.scrape "agent" {
+        targets         = [
+          {"__address__" = "127.0.0.1:12345", "app" = "grafana-agent"},
+        ]
+        forward_to      = [prometheus.remote_write.default.receiver]
+        scrape_interval = "10s"
+}
+
+/********************************************
+ * AGENT REMOTE WRITE
+ ********************************************/
+prometheus.remote_write "default" {
+  endpoint {
+    url = argument.prometheus_endpoint.value
+  }
 }

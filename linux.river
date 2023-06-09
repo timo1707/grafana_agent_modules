@@ -8,13 +8,13 @@ logging {
 /********************************************
  * AGENT METRICS FOR LINUX SYSTEMS
  ********************************************/
-module.git "metrics_win" {
+module.git "metrics_linux" {
 	repository = "https://github.com/timo1707/grafana_agent_modules.git"
 	revision   = "main"
 	path       = "modules/metrics/linux/module.river"
 
 	arguments {
-        prometheus_endpoint = ***
+        prometheus_endpoint = "http://192.168.188.8:9090/api/v1/write" //your prometheus_endpoint
 	}
 }
 
