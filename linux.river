@@ -6,25 +6,31 @@ logging {
 }
 
 /********************************************
- * AGENT METRICS FOR LINUX SYSTEMS
+ * UNIX METRICS
  ********************************************/
-module.git "metrics_linux" {
-	repository = "https://github.com/timo1707/grafana_agent_modules.git"
-	revision   = "main"
-	path       = "modules/metrics/linux/module.river"
-
-	arguments {
-        prometheus_endpoint = "http://192.168.188.8:9090/api/v1/write" //your prometheus_endpoint
-	}
+prometheus.exporter.unix {
 }
 
 /********************************************
- * AGENT LOGS FOR LINUX SYSTEMS
+ * PROMETHEUS SCRAPE
  ********************************************/
-/*
-module.git "logs_win" {
-	repository = "https://github.com/timo1707/grafana_agent_modules.git"
-	revision   = "main"
-	path       = "modules/logs/linux/module.river"
+prometheus.scrape "default" {
+  targets    = prometheus.exporter.unix.targets
+  forward_to = [prometheus.remote_write.default.receiver ]
 }
-*/
+prometheus.scrape "agent" {
+        targets         = [
+          {"__address__" = "127.0.0.1:12345", "app" = "grafana-agent"},
+        ]
+        forward_to      = [prometheus.remote_write.default.receiver]
+        scrape_interval = "10s"
+}
+
+/********************************************
+ * AGENT REMOTE WRITE
+ ********************************************/
+prometheus.remote_write "default" {
+  endpoint {
+    url = "http://192.168.188.8:9090/api/v1/write"
+  }
+}
