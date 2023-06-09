@@ -1,0 +1,30 @@
+/********************************************
+ * GENERAL
+ ********************************************/
+logging {
+	level = "warn"
+}
+
+/********************************************
+ * AGENT METRICS FOR LINUX SYSTEMS
+ ********************************************/
+module.git "metrics_win" {
+	repository = "https://github.com/timo1707/grafana_agent_modules.git"
+	revision   = "main"
+	path       = "modules/metrics/linux/module.river"
+
+	arguments {
+        prometheus_endpoint = ***
+	}
+}
+
+/********************************************
+ * AGENT LOGS FOR LINUX SYSTEMS
+ ********************************************/
+/*
+module.git "logs_win" {
+	repository = "https://github.com/timo1707/grafana_agent_modules.git"
+	revision   = "main"
+	path       = "modules/logs/linux/module.river"
+}
+*/

@@ -1,0 +1,25 @@
+/********************************************
+ * ARGUMENTS
+ ********************************************/
+argument "prometheus_endpoint" { }
+
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+
+/********************************************
+ * AGENT METRICS
+ ********************************************/
+prometheus.remote_write "default" {
+	endpoint {
+		url = argument.prometheus_endpoint.value
+	}
+}
+
+prometheus.scrape "default" {
+	targets         = discovery.docker.default.output
+	forward_to      = [prometheus.remote_write.default.receiver]
+	scrape_interval = "10s"
+}

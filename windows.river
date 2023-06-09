@@ -1,0 +1,29 @@
+/********************************************
+ * GENERAL
+ ********************************************/
+logging {
+	level = "warn"
+}
+
+/********************************************
+ * AGENT METRICS FOR WINDOWS SYSTEMS
+ ********************************************/
+module.git "metrics_win" {
+	repository = "https://github.com/timo1707/grafana_agent_modules.git"
+	revision   = "main"
+	path       = "modules/metrics/windows/module.river"
+
+	arguments {
+        enabled_collectors = env("flow_collector")
+        enabled_service  = env("flow_service")
+	}
+}
+
+/********************************************
+ * AGENT LOGS FOR WINDOWS SYSTEMS
+ ********************************************/
+module.git "logs_win" {
+	repository = "https://github.com/timo1707/grafana_agent_modules.git"
+	revision   = "main"
+	path       = "modules/logs/windows/module.river"
+}
