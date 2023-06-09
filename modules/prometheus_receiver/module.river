@@ -1,0 +1,24 @@
+/********************************************
+ * ARGUMENTS
+ ********************************************/
+
+argument "url" {
+	optional = false
+}
+
+/********************************************
+ * EXPORTS
+ ********************************************/
+export "receiver" {
+	value = prometheus.remote_write.default.receiver
+}
+
+/********************************************
+ * METRICS RECEIVER
+ ********************************************/
+prometheus.remote_write "default" {
+	endpoint {
+		url = argument.url.value
+
+	}
+}

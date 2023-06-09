@@ -4,12 +4,6 @@
 argument "prometheus_endpoint" { }
 
 
-/********************************************
- * EXPORTS
- ********************************************/
-export "receiver" {
-	value = prometheus.remote_write.default.receiver
-}
 
 /********************************************
  * UNIX METRICS
